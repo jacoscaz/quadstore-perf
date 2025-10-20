@@ -45,17 +45,17 @@ main(async () => {
       ));
     }
     timeEnd('quadstore - write');
-    
 
-    time('oxigraph - SQL read');    
+
+    time('oxigraph - SQL read');
     let oxigraph_sql_count = (oxistore.query('SELECT * WHERE { ?s ?p ?o }', {}) as OxiQuad[]).length;
     // for (const binding of oxistore.query('SELECT * WHERE { ?s ?p ?o }', {})) {
     //   oxigraph_sql_count += 1;
     // }
     strictEqual(oxigraph_sql_count, QTY, 'bad count');
-    timeEnd('oxigraph - SQL read');    
+    timeEnd('oxigraph - SQL read');
 
-    time('quadstore - SQL read');    
+    time('quadstore - SQL read');
     let quadstore_sql_count = 0;
     const quadstore_sql_iterator = await engine.queryBindings('SELECT * WHERE { ?s ?p ?o }');
     quadstore_sql_iterator.on('data', (binding: any) => {
@@ -63,14 +63,14 @@ main(async () => {
     });
     await waitForEvent(quadstore_sql_iterator, 'end');
     strictEqual(quadstore_sql_count, QTY, 'bad count');
-    timeEnd('quadstore - SQL read');  
+    timeEnd('quadstore - SQL read');
 
-    time('oxigraph - API read');  
+    time('oxigraph - API read');
     const quads = oxistore.match(null, null, null, null);
     strictEqual(quads.length, QTY, 'bad count');
-    timeEnd('oxigraph - API read');  
+    timeEnd('oxigraph - API read');
 
-    time('quadstore - API read');  
+    time('quadstore - API read');
     let quadstore_api_count = 0;
     const { iterator: quadstore_api_iterator } = await quadstore.getStream({});
     quadstore_api_iterator.on('data', (binding: any) => {
@@ -78,8 +78,8 @@ main(async () => {
     });
     await waitForEvent(quadstore_api_iterator, 'end');
     strictEqual(quadstore_api_count, QTY, 'bad count');
-    timeEnd('quadstore - API read');  
-    
+    timeEnd('quadstore - API read');
+
   });
 
   console.log(JSON.stringify(results, null, 2));

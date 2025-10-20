@@ -1,6 +1,6 @@
 
 import { AbstractLevel } from 'abstract-level';
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 import { uid } from 'uid';
 import assert from 'node:assert';
 
@@ -21,7 +21,7 @@ export type InfoFn = (label: string, value: any) => void;
 export type TestFn = (backend: AbstractLevel<any, any, any>, du: DiskUsageFn, time: TimeFn, timeEnd: TimeEndFn, info: InfoFn) => Promise<void>;
 
 export interface TestResults {
-  time: { 
+  time: {
     total: number;
     partials: Record<string, { time: number }>;
   };
@@ -31,7 +31,7 @@ export interface TestResults {
 
 const du = async (absPath: string, label: string, disk_results: TestResults['disk']): Promise<void> => {
   assert(!(label in disk_results), 'cannot reuse label for disk usage');
-  const childProcess = await import('child_process');
+  const childProcess = await import('node:child_process');
   disk_results[label] = await new Promise((resolve, reject) => {
     childProcess.exec(`du -m -s ${absPath}`, (err: Error|null, stdout: string) => {
       if (err) reject(err);
@@ -41,11 +41,11 @@ const du = async (absPath: string, label: string, disk_results: TestResults['dis
 }
 
 const runTestUsingDiskStorage = async (fn: TestFn, time: TimeFn, timeEnd: TimeEndFn, info: InfoFn, disk_results: TestResults['disk']): Promise<void> => {
-  const os = await import('os');
-  const path = await import('path');
-  const fs = await import('fs/promises');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const fs = await import('node:fs/promises');
   const dir = path.join(os.tmpdir(), `node-quadstore-${uid()}`);
-  const backend = new (await import('classic-level')).ClassicLevel(dir);  
+  const backend = new (await import('classic-level')).ClassicLevel(dir);
   const checkDiskUsage: DiskUsageFn = (label: string) => du(dir, label, disk_results);
   await fn(backend, (checkDiskUsage), time, timeEnd, info);
   await fs.rm(dir, { recursive: true });
@@ -87,11 +87,11 @@ export const runTest = async (fn: TestFn): Promise<TestResults> => {
     default:
       throw new Error('unsupported');
   }
-  return { 
-    time: { 
-      total: Date.now() - test_started_at, 
-      partials: Object.fromEntries(Object.entries(partials).map(([name, { time }]) => [name, { time }])) }, 
-    disk, 
+  return {
+    time: {
+      total: Date.now() - test_started_at,
+      partials: Object.fromEntries(Object.entries(partials).map(([name, { time }]) => [name, { time }])) },
+    disk,
     info,
   };
 };
